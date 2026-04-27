@@ -29,4 +29,5 @@ jobs:
           git config user.email "actions@github.com"
           git add calendar.ics
           git commit -m "update calendar" || echo "no changes"
+          git pull --rebase
           git push
