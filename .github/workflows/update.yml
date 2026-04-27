@@ -23,11 +23,18 @@ jobs:
       - name: Generate calendar
         run: python generate_calendar.py
 
-      - name: Commit file
+      - name: Commit & push (force safe)
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
+          
           git add calendar.ics
           git commit -m "update calendar" || echo "no changes"
-          git pull --rebase
-          git push
+          
+          git fetch origin main
+          git reset --soft origin/main
+          
+          git add calendar.ics
+          git commit -m "update calendar" || echo "no changes"
+          
+          git push origin main --force
