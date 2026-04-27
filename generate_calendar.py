@@ -36,27 +36,29 @@ try:
         name = race["raceName"]
         location = race["Circuit"]["circuitName"]
 
-        # Tijd fallback als niet beschikbaar
+        # veilige tijd parsing
         time_str = race.get("time", "15:00:00Z")
 
-        dt = datetime.fromisoformat(race["date"] + "T" + time_str.replace("Z",""))
-        dt = dt.astimezone(tz)
+        dt_utc = datetime.strptime(
+            race["date"] + " " + time_str.replace("Z",""),
+            "%Y-%m-%d %H:%M:%S"
+        )
+
+        # maak UTC timezone aware
+        dt_utc = pytz.utc.localize(dt_utc)
+
+        # converteer naar Amsterdam
+        dt_local = dt_utc.astimezone(tz)
 
         events.append(event(
             f"F1 - {name} ({location})",
-            dt.replace(tzinfo=None),
+            dt_local.replace(tzinfo=None),
             120,
             location
         ))
 
-except:
-    # fallback als API faalt
-    events.append(event(
-        "F1 - Calendar unavailable (TBC)",
-        datetime(2026,3,1,15,0),
-        120,
-        "Unknown"
-    ))
+except Exception as e:
+    print("F1 ERROR:", e)
 
 # ---------------- MotoGP (fallback + TBC) ----------------
 motogp = [
