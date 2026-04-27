@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-import pytz, uuid, requests
+import pytz, uuid, requests, traceback
 
 tz = pytz.timezone("Europe/Amsterdam")
 
@@ -30,13 +30,18 @@ events = []
 # ---------------- LIVE F1 DATA ----------------
 try:
     url = "https://ergast.com/api/f1/2026.json"
-    data = requests.get(url, timeout=10).json()
+    response = requests.get(url, timeout=10)
 
-    for race in data["MRData"]["RaceTable"]["Races"]:
-        name = race["raceName"]
-        location = race["Circuit"]["circuitName"]
+    if response.status_code != 200:
+        raise Exception("F1 API niet bereikbaar")
 
-        # veilige tijd parsing
+    data = response.json()
+
+    races = data.get("MRData", {}).get("RaceTable", {}).get("Races", [])
+
+    for race in races:
+        name = race.get("raceName", "Unknown")
+        location = race.get("Circuit", {}).get("circuitName", "Unknown")
         time_str = race.get("time", "15:00:00Z")
 
         dt_utc = datetime.strptime(
@@ -44,10 +49,7 @@ try:
             "%Y-%m-%d %H:%M:%S"
         )
 
-        # maak UTC timezone aware
         dt_utc = pytz.utc.localize(dt_utc)
-
-        # converteer naar Amsterdam
         dt_local = dt_utc.astimezone(tz)
 
         events.append(event(
@@ -57,10 +59,11 @@ try:
             location
         ))
 
-except Exception as e:
-    print("F1 ERROR:", e)
+except Exception:
+    print("F1 ERROR:")
+    traceback.print_exc()
 
-# ---------------- MotoGP (fallback + TBC) ----------------
+# ---------------- MotoGP ----------------
 motogp = [
 ("Dutch GP","TT Assen",6,28),
 ("Valencia GP","Valencia",11,15),
@@ -98,6 +101,10 @@ events.append(event(
     "Monte Carlo"
 ))
 
-# SAVE
-with open("calendar.ics","w") as f:
-    f.write(wrap(events))
+# ---------------- SAVE ----------------
+try:
+    with open("calendar.ics","w") as f:
+        f.write(wrap(events))
+except Exception:
+    print("SAVE ERROR:")
+    traceback.print_exc()
