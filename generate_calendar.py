@@ -31,7 +31,7 @@ END:VEVENT
 def wrap(events):
     return """BEGIN:VCALENDAR
 VERSION:2.0
-PRODID:-//Motorsport Final Boss//EN
+PRODID:-//Motorsport Calendar//EN
 CALSCALE:GREGORIAN
 METHOD:PUBLISH
 """ + "".join(e["ics"] for e in events) + "END:VCALENDAR"
@@ -40,7 +40,7 @@ events = {}
 def add(e):
     events[e["uid"]] = e
 
-# ================= F1 =================
+# ===== F1 LIVE =====
 try:
     data = requests.get("https://ergast.com/api/f1/2026.json", timeout=10).json()
     races = data.get("MRData", {}).get("RaceTable", {}).get("Races", [])
@@ -61,7 +61,7 @@ try:
 except:
     add(make_event("F1 - Season (TBC)", datetime(2026,3,1,15,0), 120, "Unknown"))
 
-# ================= MotoGP =================
+# ===== MotoGP =====
 motogp = [
 ("Qatar GP","Lusail",3,29),("Portugal GP","Portimao",4,12),
 ("Americas GP","Austin",4,26),("Spain GP","Jerez",5,3),
@@ -78,7 +78,7 @@ motogp = [
 for n,l,m,d in motogp:
     add(make_event(f"MotoGP - {n} ({l}) (TBC)", datetime(2026,m,d,14,0),45,l))
 
-# ================= WEC =================
+# ===== WEC =====
 wec = [
 ("Qatar 1812km","Lusail",3,1,600),("Imola 6H","Imola",4,19,360),
 ("Spa 6H","Spa",5,9,360),("24h Le Mans","Le Mans",6,13,1440),
@@ -88,7 +88,7 @@ wec = [
 for n,l,m,d,dur in wec:
     add(make_event(f"WEC - {n} (TBC)", datetime(2026,m,d,13,0),dur,l))
 
-# ================= DTM =================
+# ===== DTM =====
 dtm = [
 ("Hockenheim",5,2),("Lausitzring",5,23),("Zandvoort",6,6),
 ("Norisring",7,4),("Nürburgring",8,8),
@@ -99,7 +99,7 @@ for n,m,d in dtm:
     add(make_event(f"DTM - {n} - Race 1 (TBC)", datetime(2026,m,d,13,30),60,n))
     add(make_event(f"DTM - {n} - Race 2 (TBC)", datetime(2026,m,d+1,13,30),60,n))
 
-# ================= WRC =================
+# ===== WRC =====
 wrc = [
 ("Monte Carlo",1,22),("Sweden",2,12),("Mexico",3,12),
 ("Croatia",4,23),("Portugal",5,21),("Sardinia",6,4),
@@ -112,7 +112,7 @@ for n,m,d in wrc:
     for i in range(3):
         add(make_event(f"WRC - {n} (Day {i+1}) (TBC)", base+timedelta(days=i),480,n))
 
-# ================= SORT =================
+# ===== SORT & SAVE =====
 final_events = sorted(events.values(), key=lambda e: e["start"])
 
 with open("calendar.ics","w") as f:
