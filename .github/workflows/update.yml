@@ -2,7 +2,7 @@ name: Update Calendar
 
 on:
   schedule:
-    - cron: "0 6 * * 1"   # elke maandag 06:00
+    - cron: "0 6 * * 1"
   workflow_dispatch:
 
 jobs:
@@ -10,23 +10,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
-          python-version: 3.10
+          python-version: "3.11"
 
-      - name: Install dependencies
-        run: pip install pytz
+      - run: pip install pytz
 
-      - name: Generate calendar
-        run: python generate_calendar.py
+      - run: python generate_calendar.py
 
-      - name: Commit updated calendar
-        run: |
+      - run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
           git add calendar.ics
-          git commit -m "Update calendar" || echo "No changes"
+          git commit -m "update calendar" || echo "no changes"
           git push
