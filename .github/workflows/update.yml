@@ -3,29 +3,24 @@ name: Update Calendar
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 6 * * 1"   # elke maandag 06:00
+    - cron: "0 6 * * 1"
 
 jobs:
   build:
     runs-on: ubuntu-22.04
 
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      - name: Install dependencies
-        run: pip install pytz requests
+      - run: pip install pytz requests
 
-      - name: Generate calendar
-        run: python generate_calendar.py
+      - run: python generate_calendar.py
 
-      - name: Commit & push calendar
-        uses: EndBug/add-and-commit@v9
+      - uses: EndBug/add-and-commit@v9
         with:
           add: "calendar.ics"
           message: "update calendar"
